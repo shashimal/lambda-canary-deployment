@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Lambda canary deployment example
+Resources:
+  CountFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs12.x
+      FunctionName: CountFunction
+      CodeUri: ./src
+      AutoPublishAlias: prod
+      DeploymentPreference:
+        Type: CodeDeployDefault.LambdaCanary10Percent5Minutes
+        Hooks:
+          PreTraffic: !Ref BeforeAllowTraffic
+
+  BeforeAllowTraffic:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./hooks
+      Handler: pretrafic.handler
+      FunctionName: 'CodeDeployHook_BeforeAllowTraffic'
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "codedeploy:PutLifecycleEventHookExecutionStatus"
+              Resource:
+                !Sub 'arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${ServerlessDeploymentApplication}/*'
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "lambda:InvokeFunction"
+              Resource: !Ref CountFunction.Version
+      Runtime: nodejs12.x
+      DeploymentPreference:
+        Enabled: false
+      Timeout: 60
+      MemorySize: 512
+      Environment:
+        Variables:
+          NewVersion: !Ref CountFunction.Version
+          LifecycleStatus: Succeeded
