@@ -6,7 +6,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
-      Runtime: nodejs12.x
+      Runtime: nodejs16.x
       FunctionName: CountFunction
       CodeUri: ./src
       AutoPublishAlias: prod
@@ -35,7 +35,7 @@ Resources:
               Action:
                 - "lambda:InvokeFunction"
               Resource: !Ref CountFunction.Version
-      Runtime: nodejs12.x
+      Runtime: nodejs16.x
       DeploymentPreference:
         Enabled: false
       Timeout: 60
