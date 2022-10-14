@@ -6,7 +6,7 @@ phases:
   build:
     commands:
       - sam build
-      - export BUCKET=du-codepipeline-artifact
+      - export BUCKET=$artifact_bucket
       - sam package --s3-bucket $BUCKET --output-template-file outputtemplate.yml
 artifacts:
   type: zip
